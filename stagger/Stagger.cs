@@ -1,16 +1,20 @@
+using System.Reflection;
+
 namespace Stagger.Model
 {
     public abstract class Stagger : IStagger
     {
-        public Queue<IProcess> Ready { get; init; } = new Queue<IProcess>();
-        public Queue<IProcess> Waiting { get; } = new Queue<IProcess>();
-        public Queue<IProcess> Completed { get; } = new Queue<IProcess>();
+        public IEnumerable<IProcess> Ready { get; init; }
+        public IEnumerable<IProcess> Waiting { get; init; }
+        public IEnumerable<IProcess> Completed { get; init; }
         public bool Idle { get { return !this.Busy; } }
         public bool Busy { get { return Waiting.Any() || Ready.Any(); } }
 
-        public Stagger(Queue<IProcess> ready)
+        public Stagger(IEnumerable<IProcess> ready)
         {
             this.Ready = ready;
+            this.Waiting = (IEnumerable<IProcess>) Activator.CreateInstance(ready.GetType());
+            this.Completed = (IEnumerable<IProcess>) Activator.CreateInstance(ready.GetType());
         }
 
         public abstract void Work();

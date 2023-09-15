@@ -4,9 +4,9 @@ namespace Stagger.Model
 {
     public interface IStagger
     {
-        Queue<IProcess> Ready { get; }
-        Queue<IProcess> Waiting { get; }
-        Queue<IProcess> Completed { get; }
+        IEnumerable<IProcess> Ready { get; }
+        IEnumerable<IProcess> Waiting { get; }
+        IEnumerable<IProcess> Completed { get; }
         bool Idle { get; }
         bool Busy { get; }
 
