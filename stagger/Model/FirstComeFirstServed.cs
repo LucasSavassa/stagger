@@ -4,7 +4,8 @@ namespace Stagger.Model
 {
     public class FirstComeFirstServed : IStagger
     {
-        public Queue<IProcess> Ready { get; init; }
+        public string Name => "First Come First Served";
+        public Queue<IProcess> Ready { get; } = new Queue<IProcess>();
         public Queue<IProcess> Waiting { get; } = new Queue<IProcess>();
         public Queue<IProcess> Completed { get; } = new Queue<IProcess>();
 
@@ -12,10 +13,7 @@ namespace Stagger.Model
 
         public bool Busy =>  this.Ready.Any() || this.Waiting.Any();
 
-        public FirstComeFirstServed(Queue<IProcess> ready)
-        {
-            this.Ready = ready;
-        }
+        public FirstComeFirstServed() { }
 
         public void Work()
         {
