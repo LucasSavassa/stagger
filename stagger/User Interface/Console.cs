@@ -4,19 +4,21 @@ namespace Stagger.UserInterface
 {
     public class Console : IUserInterface
     {
-        IStagger? _stagger;
+        Type _staggerType;
+        IStagger _stagger;
         List<IProcess> _processes = new();
 
         public Console()
         {
-            
+            _stagger = new FirstComeFirstServed(new Queue<IProcess>());
+            _staggerType = _stagger.GetType();
         }
 
         public void Start() 
         {
             if (!this.Welcome()) return;
             if (!this.PromptForStaggerType()) return;
-            if (!this.PromptForProcesses()) return;
+            if (!this.PromptForMain()) return;
         }
 
         #region Welcome
@@ -89,7 +91,7 @@ namespace Stagger.UserInterface
                 case "Ff":
                 case "fF":
                 case "1":
-                    _stagger = new FirstComeFirstServed();
+                    _staggerType = typeof(FirstComeFirstServed);
                     _processes = new ();
                     return true;
                 case "SJ":
@@ -131,13 +133,13 @@ namespace Stagger.UserInterface
         #endregion
 
         #region Processes
-        private bool PromptForProcesses()
+        private bool PromptForMain()
         {
             do 
             {
                 System.Console.Clear();
                 System.Console.WriteLine("-------------------");
-                System.Console.WriteLine($"You chose {_stagger?.Name}.");
+                System.Console.WriteLine($"You chose {_stagger.Name}.");
                 System.Console.WriteLine();
 
                 System.Console.ForegroundColor = ConsoleColor.Blue;                
@@ -172,16 +174,14 @@ namespace Stagger.UserInterface
                 case "S":
                 case "s":
                 case "2":
-                    System.Console.Clear();
-                    System.Console.WriteLine("You have choosen 2. [S]imulate");
-                    System.Console.WriteLine("Unfortunately it has not been implemented yet :/");
-                    System.Console.WriteLine("Good bye!");
-                    return false;
+                    return this.PromptSimulation();
                 case "Q":
                 case "q":
                 case "3":
                     return false;
                 default:
+                    System.Console.WriteLine("Not a valid option.");
+                    System.Console.WriteLine("Good bye!");
                     return false;
             }
         }
@@ -231,7 +231,117 @@ namespace Stagger.UserInterface
 
         private bool PromptSimulation()
         {
-            throw new NotImplementedException();
+            this.InstantiateStagger();
+            int iteration = 0;
+            do 
+            {
+                iteration++;
+                this.PromptStep();
+                this.PromptSimulationStatus(iteration);
+                if (this.PromptConfirmation()) break;
+            } while (_stagger.Busy);
+
+            return PromptStatistics();
+        }
+
+        private bool PromptStep()
+        {
+            System.Console.ForegroundColor = ConsoleColor.Blue;
+            System.Console.Clear();
+            System.Console.WriteLine("-------------------");
+            System.Console.WriteLine($"Starting to work on a process..");
+            System.Console.Write($"Type any key to continue..");
+            System.Console.ReadLine();
+            _stagger.Work(System.Console.WriteLine);
+            System.Console.WriteLine();
+            System.Console.ResetColor();
+
+            return true;
+        }
+
+        private void PromptSimulationStatus(int iteration)
+        {            
+            System.Console.WriteLine($"Iteration {iteration}");
+            System.Console.WriteLine();
+            
+            this.PromptProgress();
+            System.Console.WriteLine();
+
+            this.PromptQueue();
+        }
+
+        private void PromptProgress()
+        {
+            System.Console.ForegroundColor = ConsoleColor.Blue;
+            System.Console.WriteLine("-------------------");
+            System.Console.WriteLine($"Result");
+
+            System.Console.ForegroundColor = ConsoleColor.Green;
+            System.Console.Write(new string('|', _stagger.Current));
+            System.Console.ForegroundColor = ConsoleColor.Gray;
+            System.Console.Write(new string('|', _stagger.Length - _stagger.Current));
+            System.Console.WriteLine();
+            System.Console.ResetColor();
+        }
+
+        private void PromptQueue()
+        {
+            System.Console.ForegroundColor = ConsoleColor.Blue;
+            System.Console.WriteLine("-------------------");
+            System.Console.WriteLine($"Queue");
+            foreach (IProcess process in _stagger.Ready)
+            {
+                System.Console.Write($"Process ID {process.ID.ToString().PadLeft(4, '0')} : ");
+                System.Console.ForegroundColor = ConsoleColor.Green;
+                System.Console.Write($"{new string('|', process.CurrentStep)}");
+                System.Console.ForegroundColor = ConsoleColor.Gray;
+                System.Console.WriteLine($"{new string('|', process.Steps - process.CurrentStep)}");
+            }
+            System.Console.WriteLine();
+            System.Console.ResetColor();
+        }
+
+        private bool PromptStatistics()
+        {
+            return true;
+        }
+
+        private void InstantiateStagger()
+        {
+            var constructor = _staggerType.GetConstructor(new Type[1] {typeof(IEnumerable<IProcess>)});
+            constructor?.Invoke(_stagger, new object[] { _processes });
+        }
+
+        private bool PromptConfirmation()
+        {
+            System.Console.WriteLine("Do you wish to continue?");
+            System.Console.WriteLine("1. [Y]es");
+            System.Console.WriteLine("2. [N]o");
+            System.Console.Write("option: ");
+
+            return this.ProcessConfirmation();
+        }
+
+        private bool ProcessConfirmation()
+        {
+            string option = System.Console.ReadLine() ?? "N";
+
+            switch (option)
+            {
+                case "Y":
+                case "y":
+                case "1":
+                    return true;
+                case "N":
+                case "n":
+                case "2":
+                    System.Console.WriteLine("Good bye!");
+                    return false;
+                default:
+                    System.Console.WriteLine("Not a valid option.");
+                    System.Console.WriteLine("Good bye!");
+                    return false;
+            }
         }
     }
 }
