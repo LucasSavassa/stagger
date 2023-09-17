@@ -1,5 +1,6 @@
 namespace Stagger.Model
 {
+    public delegate void WriteCallback(string message);
     public interface IStagger
     {
         string Name { get; }
@@ -8,6 +9,8 @@ namespace Stagger.Model
         Queue<IProcess> Completed { get; }
         bool Idle { get; }
         bool Busy { get; }
-        void Work();
+        int Length { get; }
+        int Current { get; }
+        void Work(WriteCallback log);
     }
 }

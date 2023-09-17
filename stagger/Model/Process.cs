@@ -20,5 +20,10 @@ namespace Stagger.Model
             this.Steps = steps;
             this.CurrentStep = 0;
         }
+
+        public void Progress() 
+        {
+            this.CurrentStep++;
+        }
     }
 }
