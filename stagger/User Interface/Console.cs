@@ -243,7 +243,8 @@ namespace Stagger.UserInterface
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             _stagger.Work(Console.WriteLine);
             Console.WriteLine();
-
+            
+            Console.ResetColor();
             Console.WriteLine($"Type any key to continue..");
             Console.ReadKey();
 
@@ -284,22 +285,70 @@ namespace Stagger.UserInterface
 
         private bool PromptQueue()
         {
+            if (!PromptWaitingQueue()) return false;
+            if (!PromptReadyQueue()) return false;
+            if (!PromptCompletedQueue()) return false;
+
+            return true;
+        }
+
+        private bool PromptWaitingQueue()
+        {
             if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
 
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine($"Queue");
-            foreach (IProcess process in _stagger.Ready)
+            Console.WriteLine($"Waiting Queue");
+            foreach (IProcess process in _stagger.Waiting)
             {
                 Console.Write($"  PID {process.ID.ToString().PadLeft(4, '0')} : ");
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write($"{new string('|', process.CurrentStep)}");
-                Console.ForegroundColor = ConsoleColor.Gray;                
+                Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine($"{new string('|', process.RemainingSteps)}");
                 Console.ForegroundColor = ConsoleColor.Blue;
             }
             Console.WriteLine();
             Console.ResetColor();
+            return true;
+        }
 
+        private bool PromptReadyQueue()
+        {
+            if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
+
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine($"Ready Queue");
+            foreach (IProcess process in _stagger.Ready)
+            {
+                Console.Write($"  PID {process.ID.ToString().PadLeft(4, '0')} : ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write($"{new string('|', process.CurrentStep)}");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.WriteLine($"{new string('|', process.RemainingSteps)}");
+                Console.ForegroundColor = ConsoleColor.Blue;
+            }
+            Console.WriteLine();
+            Console.ResetColor();
+            return true;
+        }
+
+        private bool PromptCompletedQueue()
+        {
+            if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
+
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine($"Completed Queue");
+            foreach (IProcess process in _stagger.Completed)
+            {
+                Console.Write($"  PID {process.ID.ToString().PadLeft(4, '0')} : ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write($"{new string('|', process.CurrentStep)}");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.WriteLine($"{new string('|', process.RemainingSteps)}");
+                Console.ForegroundColor = ConsoleColor.Blue;
+            }
+            Console.WriteLine();
+            Console.ResetColor();
             return true;
         }
 
