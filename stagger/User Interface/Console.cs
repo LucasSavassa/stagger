@@ -277,9 +277,9 @@ namespace Stagger.UserInterface
             Console.WriteLine($"Total steps");
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(new string('|', _stagger.Completed.Sum(process => process.Steps)));
+            Console.Write(new string('|', _stagger.Progress));
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write(new string('|', _stagger.Length -_stagger.Completed.Sum(process => process.Steps)));
+            Console.Write(new string('|', _stagger.Length - _stagger.Progress));
             Console.WriteLine();
             Console.ResetColor();
 
