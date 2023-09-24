@@ -140,7 +140,7 @@ namespace Stagger.UserInterface
 
                 Console.ForegroundColor = ConsoleColor.Blue;                
                 Console.WriteLine($"Processes");
-                Console.WriteLine($"Waiting: {_stagger.Waiting.Count}");
+                Console.WriteLine($"Waiting: {_stagger.Arriving.Count}");
                 Console.ResetColor();
                 
                 Console.WriteLine();
