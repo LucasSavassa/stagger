@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}/stagger/bin/Debug/net7.0/stagger.dll",
             "args": [],
             "cwd": "${workspaceFolder}/stagger",
-            "console": "internalConsole",
+            "console": "integratedTerminal",
             "stopAtEntry": false
         },
         {

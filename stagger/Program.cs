@@ -1,2 +1,2 @@
 ﻿// See https://aka.ms/new-console-template for more information
-new Stagger.UserInterface.Console().Start();
+new Stagger.UserInterface.ConsoleUI().Start();

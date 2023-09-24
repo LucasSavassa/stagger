@@ -8,6 +8,7 @@ namespace Stagger.Model
         int Priority { get; }
         int Steps { get; }
         int CurrentStep { get; }
+        int RemainingSteps { get; }
         bool Completed { get; }
         void Progress();
     }

@@ -9,7 +9,8 @@ namespace Stagger.Model
         public int Priority { get; init; }
         public int Steps { get; init; }
         public int CurrentStep { get; private set; }
-        public bool Completed { get { return CurrentStep.Equals(Steps); } }
+        public int RemainingSteps => Steps - CurrentStep;
+        public bool Completed => CurrentStep.Equals(Steps);
 
         public Process(int arrivalTime, int priority, int steps)
         {
