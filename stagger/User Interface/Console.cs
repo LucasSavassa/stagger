@@ -373,6 +373,16 @@ namespace Stagger.UserInterface
 
         private bool PromptStatistics()
         {
+            if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine("Statistics..");
+            Console.WriteLine();
+            PromptDelay();
+            _stagger.ReportStatistics(Console.WriteLine);
+            Console.ResetColor();
+            Console.Write("Type any key to continue..");
+            Console.ReadKey();
             return false;
         }
         #endregion

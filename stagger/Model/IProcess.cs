@@ -11,7 +11,11 @@ namespace Stagger.Model
         int RemainingSteps { get; }
         bool Completed { get; }
         bool Suspended { get; }
+        int? ArrivedAt { get; }
+        int? CompletedAt { get; }
         bool Progress();
         bool CanResume();
+        void Arrive(int clock);
+        void Complete(int clock);
     }
 }

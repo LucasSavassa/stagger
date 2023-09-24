@@ -15,5 +15,6 @@ namespace Stagger.Model
         int Clock { get; }
         void Arrive(IProcess process);
         void Work(WriteCallback log);
+        void ReportStatistics(WriteCallback log);
     }
 }

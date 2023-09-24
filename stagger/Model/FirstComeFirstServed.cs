@@ -35,6 +35,7 @@ namespace Stagger.Model
         {
             if(process.ArrivalTime < Clock) return;
 
+            process.Arrive(Clock);
             Arriving.Add(process);
         }
 
@@ -145,6 +146,7 @@ namespace Stagger.Model
             {
                 Ready.Remove(process);
                 Completed.Add(process);
+                process.Complete(Clock);
                 ReportCompletion(log, process);
                 return;
             }
@@ -174,6 +176,23 @@ namespace Stagger.Model
             log($"PID {process.ID.ToString().PadLeft(4, '0')} has completed.");
             log($"");
             log($"Moved PID {process.ID.ToString().PadLeft(4, '0')} from READY to COMPLETED queue.");
+            log($"-----------------");
+            log($"");
+        }
+
+        public void ReportStatistics(WriteCallback log)
+        {            
+            log($"-----------------");
+            log($"Stagger {Name} has executed all processes.");
+            log($"");
+            log($"Total execution time:");
+            log($"  {Clock} time units.");
+            log($"");
+            log($"Mean execution time:");
+            log($"  {1.0 * Completed.Sum(process => process.CompletedAt - process.ArrivedAt) / Completed.Count:N2} time units.");
+            log($"");
+            log($"Mean waiting time:");
+            log($"  {1.0 * Completed.Sum(process => process.CompletedAt - process.ArrivedAt - process.Steps) / Completed.Count:N2} time units.");
             log($"-----------------");
             log($"");
         }

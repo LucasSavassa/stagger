@@ -13,6 +13,8 @@ namespace Stagger.Model
         public int RemainingSteps => Steps - CurrentStep;
         public bool Completed => CurrentStep.Equals(Steps);
         public bool Suspended { get; private set; }
+        public int? ArrivedAt { get; private set; }
+        public int? CompletedAt { get; private set; }
 
         public Process(int arrivalTime, int priority, int steps)
         {
@@ -46,6 +48,16 @@ namespace Stagger.Model
         private bool WaitingInput()
         {
             return new Random().NextDouble() <= _probability;
+        }
+
+        public void Arrive(int clock)
+        {
+            this.ArrivedAt ??= clock;
+        }
+
+        public void Complete(int clock)
+        {
+            this.CompletedAt ??= clock;
         }
     }
 }
