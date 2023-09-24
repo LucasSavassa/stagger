@@ -2,17 +2,12 @@ using Stagger.Model;
 
 namespace Stagger.UserInterface
 {
-    public class Console : IUserInterface
+    public class ConsoleUI : IUserInterface
     {
-        Type _staggerType;
-        IStagger _stagger;
-        List<IProcess> _processes = new();
+        IStagger? _stagger;
 
-        public Console()
-        {
-            _stagger = new FirstComeFirstServed(new Queue<IProcess>());
-            _staggerType = _stagger.GetType();
-        }
+        public ConsoleUI()
+        { }
 
         public void Start() 
         {
@@ -24,23 +19,23 @@ namespace Stagger.UserInterface
         #region Welcome
         private bool Welcome()
         {
-            System.Console.Clear();
-            System.Console.WriteLine("-------------------");
-            System.Console.WriteLine("Welcome to Stagger!");
-            System.Console.WriteLine("Goal: to simulate task scheduling algorithms.");
-            System.Console.WriteLine();
-            System.Console.WriteLine("Choose an option.");
-            System.Console.WriteLine("1. [N]ext");
-            System.Console.WriteLine("2. [S]top");
-            System.Console.Write("option: ");
+            Console.Clear();
+            Console.WriteLine("-------------------");
+            Console.WriteLine("Welcome to Stagger!");
+            Console.WriteLine("Goal: to simulate task scheduling algorithms.");
+            Console.WriteLine();
+            Console.WriteLine("Choose an option.");
+            Console.WriteLine("1. [N]ext");
+            Console.WriteLine("2. [S]top");
+            Console.Write("option: ");
 
             return this.ProcessFirstOption();
         }
 
         private bool ProcessFirstOption()
         {
-            string? option = System.Console.ReadLine();
-            System.Console.WriteLine();
+            string? option = Console.ReadLine();
+            Console.WriteLine();
 
             switch (option)
             {
@@ -53,11 +48,11 @@ namespace Stagger.UserInterface
                 case "S":
                 case "s":
                 case "2":
-                    System.Console.WriteLine("Good bye!");
+                    Console.WriteLine("Good bye!");
                     return false;
                 default:
-                    System.Console.WriteLine("Not a valid option.");
-                    System.Console.WriteLine("Good bye!");
+                    Console.WriteLine("Not a valid option.");
+                    Console.WriteLine("Good bye!");
                     return false;                    
             }
         }
@@ -66,23 +61,23 @@ namespace Stagger.UserInterface
         #region Stagger
         private bool PromptForStaggerType()
         {
-            System.Console.Clear();
-            System.Console.WriteLine("-------------------");
-            System.Console.WriteLine("Task #1: Choose one from these available algorithms.");
-            System.Console.WriteLine();
-            System.Console.WriteLine("1. [FF] First Come First Served");
-            System.Console.WriteLine("2. [SJ] Shortest Job First");
-            System.Console.WriteLine("3. [RR] Round Robin");
-            System.Console.WriteLine("4. [SR] Shortest Remaining Time First");
-            System.Console.Write("option: ");
+            Console.Clear();
+            Console.WriteLine("-------------------");
+            Console.WriteLine("Task #1: Choose one from these available algorithms.");
+            Console.WriteLine();
+            Console.WriteLine("1. [FF] First Come First Served");
+            Console.WriteLine("2. [SJ] Shortest Job First");
+            Console.WriteLine("3. [RR] Round Robin");
+            Console.WriteLine("4. [SR] Shortest Remaining Time First");
+            Console.Write("option: ");
 
             return this.ProcessSecondOption();
         }
 
         private bool ProcessSecondOption()
         {
-            string? option = System.Console.ReadLine();
-            System.Console.WriteLine();
+            string? option = Console.ReadLine();
+            Console.WriteLine();
 
             switch (option)
             {
@@ -91,42 +86,41 @@ namespace Stagger.UserInterface
                 case "Ff":
                 case "fF":
                 case "1":
-                    _staggerType = typeof(FirstComeFirstServed);
-                    _processes = new ();
+                    _stagger = new FirstComeFirstServed();
                     return true;
                 case "SJ":
                 case "sj":
                 case "Sj":
                 case "sJ":
                 case "2":
-                    System.Console.Clear();
-                    System.Console.WriteLine("You have choosen 2. [SJ] Shortest Job First");
-                    System.Console.WriteLine("Unfortunately it has not been implemented yet :/");
-                    System.Console.WriteLine("Good bye!");
+                    Console.Clear();
+                    Console.WriteLine("You have choosen 2. [SJ] Shortest Job First");
+                    Console.WriteLine("Unfortunately it has not been implemented yet :/");
+                    Console.WriteLine("Good bye!");
                     return false;
                 case "RR":
                 case "rr":
                 case "Rr":
                 case "rR":
                 case "3":
-                    System.Console.Clear();
-                    System.Console.WriteLine("You have choosen 3. [RR] Round Robin");
-                    System.Console.WriteLine("Unfortunately it has not been implemented yet :/");
-                    System.Console.WriteLine("Good bye!");
+                    Console.Clear();
+                    Console.WriteLine("You have choosen 3. [RR] Round Robin");
+                    Console.WriteLine("Unfortunately it has not been implemented yet :/");
+                    Console.WriteLine("Good bye!");
                     return false;
                 case "SR":
                 case "sr":
                 case "Sr":
                 case "sR":
                 case "4":
-                    System.Console.Clear();
-                    System.Console.WriteLine("You have choosen 4. [SR] Shortest Remaining Time First");
-                    System.Console.WriteLine("Unfortunately it has not been implemented yet :/");
-                    System.Console.WriteLine("Good bye!");
+                    Console.Clear();
+                    Console.WriteLine("You have choosen 4. [SR] Shortest Remaining Time First");
+                    Console.WriteLine("Unfortunately it has not been implemented yet :/");
+                    Console.WriteLine("Good bye!");
                     return false;
                 default:
-                    System.Console.WriteLine("Not a valid option.");
-                    System.Console.WriteLine("Good bye!");
+                    Console.WriteLine("Not a valid option.");
+                    Console.WriteLine("Good bye!");
                     return false;
             }
         }
@@ -135,26 +129,28 @@ namespace Stagger.UserInterface
         #region Processes
         private bool PromptForMain()
         {
+            if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
+
             do 
             {
-                System.Console.Clear();
-                System.Console.WriteLine("-------------------");
-                System.Console.WriteLine($"You chose {_stagger.Name}.");
-                System.Console.WriteLine();
+                Console.Clear();
+                Console.WriteLine("-------------------");
+                Console.WriteLine($"You chose {_stagger.Name}.");
+                Console.WriteLine();
 
-                System.Console.ForegroundColor = ConsoleColor.Blue;                
-                System.Console.WriteLine($"Processes");
-                System.Console.WriteLine($"Count: {_processes.Count}");
-                System.Console.ResetColor();
+                Console.ForegroundColor = ConsoleColor.Blue;                
+                Console.WriteLine($"Processes");
+                Console.WriteLine($"Count: {_stagger.Ready.Count}");
+                Console.ResetColor();
                 
-                System.Console.WriteLine();
-                System.Console.WriteLine("Task #2: Add more processes.");
-                System.Console.WriteLine();
-                System.Console.WriteLine("Choose an option.");
-                System.Console.WriteLine("1. [A]dd new process");
-                System.Console.WriteLine("2. [S]imulate");
-                System.Console.WriteLine("3. [Q]uit");
-                System.Console.Write("option: ");
+                Console.WriteLine();
+                Console.WriteLine("Task #2: Add more processes.");
+                Console.WriteLine();
+                Console.WriteLine("Choose an option.");
+                Console.WriteLine("1. [A]dd new process");
+                Console.WriteLine("2. [S]imulate");
+                Console.WriteLine("3. [Q]uit");
+                Console.Write("option: ");
             } while (this.ProcessThirdOption());
 
             return true;
@@ -162,8 +158,8 @@ namespace Stagger.UserInterface
 
         private bool ProcessThirdOption()
         {
-            string? option = System.Console.ReadLine();
-            System.Console.WriteLine();
+            string? option = Console.ReadLine();
+            Console.WriteLine();
 
             switch (option)
             {
@@ -180,65 +176,57 @@ namespace Stagger.UserInterface
                 case "3":
                     return false;
                 default:
-                    System.Console.WriteLine("Not a valid option.");
-                    System.Console.WriteLine("Good bye!");
+                    Console.WriteLine("Not a valid option.");
+                    Console.WriteLine("Good bye!");
                     return false;
             }
         }
 
         private bool PromptForProcess()
         {
-            System.Console.Clear();
-            System.Console.WriteLine("-------------------");            
+            if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
+
+            Console.Clear();
+            Console.WriteLine("-------------------");
 
             int arrivalTime, priority, steps;
+            arrivalTime = this.PromptForProcessProperty("Arrival time", 0, 15);
+            priority = this.PromptForProcessProperty("Priority", 0, 5);
+            steps = this.PromptForProcessProperty("Steps", 0, 10);
 
-            System.Console.Write("Arrival time: ");
-            while (!int.TryParse(System.Console.ReadLine(), out arrivalTime) || arrivalTime < 0 || arrivalTime > 15)
-            {
-                System.Console.WriteLine("Invalid Arrival Time! Type an integer number between 0 and 15.");
-                System.Console.WriteLine();
-                System.Console.Write("Arrival time: ");
-            }
-            System.Console.WriteLine($"Arrival time: {arrivalTime}");
-            System.Console.WriteLine();
-
-            System.Console.Write("Priority: ");
-            while (!int.TryParse(System.Console.ReadLine(), out priority) || priority < 1 || priority > 5)
-            {
-                System.Console.WriteLine("Invalid Priority! Type an integer number between 1 and 5.");
-                System.Console.WriteLine();
-                System.Console.Write("Priority: ");
-            }
-            System.Console.WriteLine($"Arrival time: {priority}");
-            System.Console.WriteLine();
-
-            System.Console.Write("Steps: ");
-            while (!int.TryParse(System.Console.ReadLine(), out steps) || steps < 1 || steps > 10)
-            {
-                System.Console.WriteLine("Invalid Steps! Type an integer number between 1 and 10.");
-                System.Console.WriteLine();
-                System.Console.Write("Steps: ");
-            }
-            System.Console.WriteLine($"Arrival time: {steps}");
-            System.Console.WriteLine();
-
-            _processes.Add(new Process(arrivalTime, priority, steps));
+            _stagger.Add(new Process(arrivalTime, priority, steps));
 
             return true;
         }
+
+        private int PromptForProcessProperty(string name, int min, int max)
+        {
+            int propertyValue;
+            Console.Write($"{name}: ");
+            while (!int.TryParse(Console.ReadLine(), out propertyValue) || propertyValue < min || propertyValue > max)
+            {
+                Console.WriteLine($"Invalid {name}! Type an integer number between {min} and {max}.");
+                Console.WriteLine();
+                Console.Write($"{name}: ");
+            }
+            Console.WriteLine($"Selected: {propertyValue}");
+            Console.WriteLine();
+            return propertyValue;
+        }
         #endregion
 
+        #region Simulation
         private bool PromptSimulation()
         {
-            this.InstantiateStagger();
+            if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
+
             int iteration = 0;
             do 
             {
                 iteration++;
                 this.PromptStep();
                 this.PromptSimulationStatus(iteration);
-                if (this.PromptConfirmation()) break;
+                if (!this.PromptConfirmation()) break;
             } while (_stagger.Busy);
 
             return PromptStatistics();
@@ -246,85 +234,96 @@ namespace Stagger.UserInterface
 
         private bool PromptStep()
         {
-            System.Console.ForegroundColor = ConsoleColor.Blue;
-            System.Console.Clear();
-            System.Console.WriteLine("-------------------");
-            System.Console.WriteLine($"Starting to work on a process..");
-            System.Console.Write($"Type any key to continue..");
-            System.Console.ReadLine();
-            _stagger.Work(System.Console.WriteLine);
-            System.Console.WriteLine();
-            System.Console.ResetColor();
+            if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
+
+            Console.Clear();
+
+            PromptDelay();
+
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            _stagger.Work(Console.WriteLine);
+            Console.WriteLine();
+
+            Console.WriteLine($"Type any key to continue..");
+            Console.ReadKey();
 
             return true;
         }
 
         private void PromptSimulationStatus(int iteration)
-        {            
-            System.Console.WriteLine($"Iteration {iteration}");
-            System.Console.WriteLine();
+        {
+            Console.Clear();
+            
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine($"Iteration {iteration}");
+            Console.WriteLine();
             
             this.PromptProgress();
-            System.Console.WriteLine();
+            Console.WriteLine();
 
             this.PromptQueue();
+            Console.ResetColor();
         }
 
-        private void PromptProgress()
+        private bool PromptProgress()
         {
-            System.Console.ForegroundColor = ConsoleColor.Blue;
-            System.Console.WriteLine("-------------------");
-            System.Console.WriteLine($"Result");
+            if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
 
-            System.Console.ForegroundColor = ConsoleColor.Green;
-            System.Console.Write(new string('|', _stagger.Current));
-            System.Console.ForegroundColor = ConsoleColor.Gray;
-            System.Console.Write(new string('|', _stagger.Length - _stagger.Current));
-            System.Console.WriteLine();
-            System.Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine($"Total steps");
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(new string('|', _stagger.Current));
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write(new string('|', _stagger.Length - _stagger.Current));
+            Console.WriteLine();
+            Console.ResetColor();
+
+            return true;
         }
 
-        private void PromptQueue()
+        private bool PromptQueue()
         {
-            System.Console.ForegroundColor = ConsoleColor.Blue;
-            System.Console.WriteLine("-------------------");
-            System.Console.WriteLine($"Queue");
+            if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
+
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine($"Queue");
             foreach (IProcess process in _stagger.Ready)
             {
-                System.Console.Write($"Process ID {process.ID.ToString().PadLeft(4, '0')} : ");
-                System.Console.ForegroundColor = ConsoleColor.Green;
-                System.Console.Write($"{new string('|', process.CurrentStep)}");
-                System.Console.ForegroundColor = ConsoleColor.Gray;
-                System.Console.WriteLine($"{new string('|', process.Steps - process.CurrentStep)}");
+                Console.Write($"  PID {process.ID.ToString().PadLeft(4, '0')} : ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write($"{new string('|', process.CurrentStep)}");
+                Console.ForegroundColor = ConsoleColor.Gray;                
+                Console.WriteLine($"{new string('|', process.RemainingSteps)}");
+                Console.ForegroundColor = ConsoleColor.Blue;
             }
-            System.Console.WriteLine();
-            System.Console.ResetColor();
+            Console.WriteLine();
+            Console.ResetColor();
+
+            return true;
         }
 
         private bool PromptStatistics()
         {
-            return true;
+            return false;
         }
+        #endregion
 
-        private void InstantiateStagger()
-        {
-            var constructor = _staggerType.GetConstructor(new Type[1] {typeof(IEnumerable<IProcess>)});
-            constructor?.Invoke(_stagger, new object[] { _processes });
-        }
+        #region Utility
 
         private bool PromptConfirmation()
         {
-            System.Console.WriteLine("Do you wish to continue?");
-            System.Console.WriteLine("1. [Y]es");
-            System.Console.WriteLine("2. [N]o");
-            System.Console.Write("option: ");
+            Console.WriteLine("Do you wish to proceed?");
+            Console.WriteLine("1. [Y]es");
+            Console.WriteLine("2. [N]o");
+            Console.Write("option: ");
 
             return this.ProcessConfirmation();
         }
 
         private bool ProcessConfirmation()
         {
-            string option = System.Console.ReadLine() ?? "N";
+            string option = Console.ReadLine() ?? "N";
 
             switch (option)
             {
@@ -335,13 +334,39 @@ namespace Stagger.UserInterface
                 case "N":
                 case "n":
                 case "2":
-                    System.Console.WriteLine("Good bye!");
+                    Console.WriteLine("Good bye!");
                     return false;
                 default:
-                    System.Console.WriteLine("Not a valid option.");
-                    System.Console.WriteLine("Good bye!");
+                    Console.WriteLine("Not a valid option.");
+                    Console.WriteLine("Good bye!");
                     return false;
             }
         }
+
+        private bool PromptError(string message)
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            Console.WriteLine(message);
+            Console.WriteLine();
+            Console.WriteLine("Type any key to continue..");
+            Console.ReadKey();
+
+            return false;
+        }
+
+        private static void PromptDelay()
+        {
+            Console.Write($"Working");
+            Thread.Sleep(250);
+            Console.Write($".");
+            Thread.Sleep(250);
+            Console.Write($".");
+            Thread.Sleep(250);
+            Console.WriteLine($".");
+            Thread.Sleep(250);
+            Console.WriteLine();
+        }
+        #endregion
     }
 }
