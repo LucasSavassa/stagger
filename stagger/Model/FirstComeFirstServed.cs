@@ -1,13 +1,3 @@
-
-
-
-
-
-
-
-
-
-
 namespace Stagger.Model
 {
     public class FirstComeFirstServed : IStagger
