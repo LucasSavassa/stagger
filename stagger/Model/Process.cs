@@ -37,9 +37,10 @@ namespace Stagger.Model
             return true;
         }
 
-        public void Refresh()
+        public bool CanResume()
         {
             this.Suspended = this.WaitingInput();
+            return !this.Suspended;
         }
 
         private bool WaitingInput()

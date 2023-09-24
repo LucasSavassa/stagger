@@ -5,21 +5,25 @@
 
 
 
+
+
+
 namespace Stagger.Model
 {
     public class FirstComeFirstServed : IStagger
     {
         public string Name => "First Come First Served";
-        public List<IProcess> Ready { get; } = new List<IProcess>();
+        public List<IProcess> Arriving { get; } = new List<IProcess>();
         public List<IProcess> Waiting { get; } = new List<IProcess>();
+        public List<IProcess> Ready { get; } = new List<IProcess>();
         public List<IProcess> Completed { get; } = new List<IProcess>();
-        public bool Idle => !this.Busy;
-        public bool Busy =>  this.Ready.Any() || this.Waiting.Any();
+        public bool Idle => !Busy;
+        public bool Busy =>  Ready.Any() || Waiting.Any();
         public int Length => 
-            this.Ready.Sum(process => process.Steps)
-          + this.Waiting.Sum(process => process.Steps)
-          + this.Completed.Sum(process => process.Steps);
-        public int Current { get; private set; }
+            Ready.Sum(process => process.Steps)
+          + Waiting.Sum(process => process.Steps)
+          + Completed.Sum(process => process.Steps);
+        public int Clock { get; private set; }
 
         public FirstComeFirstServed()
         {
@@ -28,99 +32,139 @@ namespace Stagger.Model
 
         public FirstComeFirstServed(IEnumerable<IProcess> initial)
         {
-            foreach(IProcess process in initial) this.Add(process);
+            foreach(IProcess process in initial) Arrive(process);
         }
 
-        public void Add(IProcess process)
+        public void Arrive(IProcess process)
         {
-            this.Ready.Add(process);
+            if(process.ArrivalTime < Clock) return;
+
+            Arriving.Add(process);
         }
 
         public void Work(WriteCallback log)
         {
-            if (this.Idle) return;
+            if (Idle) return;
 
-            this.Refresh();
-            IProcess next = this.GetNext();
-            this.Handle(log, next);
+            Clock++;
+
+            HandleArrivingQueue(log);
+            HandleWaitingQueue(log);
+            HandleReadyQueue(log);
         }
 
-        private void Refresh()
+        private void HandleArrivingQueue(WriteCallback log)
         {
-            List<IProcess> refreshed = new ();
+            List<IProcess> arrived = new ();
 
-            foreach(IProcess process in this.Waiting)
+            foreach(IProcess process in Arriving)
             {
-                if (RefreshProcess(process))
+                if (process.ArrivalTime.Equals(Clock))
                 {
-                    refreshed.Add(process);
+                    arrived.Add(process);
                 }
             }
 
-            this.MoveProcessesToReady(refreshed);
+            MoveArrivingToReady(arrived, log);
         }
 
-        private bool RefreshProcess(IProcess process)
+        private void MoveArrivingToReady(List<IProcess> arrived, WriteCallback log)
         {
-            process.Refresh();
-            return !process.Suspended;
-        }
-
-        private void MoveProcessesToReady(List<IProcess> refreshed)
-        {
-            foreach (IProcess process in refreshed)
+            foreach (IProcess process in arrived)
             {
-                this.Waiting.Remove(process);
-                int highestArrivalTime = this.Ready.Count > 0 ? this.Ready.Select(process => process.ArrivalTime).Max() : 0;
-                process.ArrivalTime = highestArrivalTime + 1;
-                this.Ready.Add(process);
+                Arriving.Remove(process);
+                Ready.Add(process);
+
+                log($"Moved PID {process.ID.ToString().PadLeft(4, '0')} from ARRIVING to READY queue.");
+                log("");
             }
+        }
+
+        private void HandleWaitingQueue(WriteCallback log)
+        {
+            List<IProcess> resumed = new ();
+
+            foreach(IProcess process in Waiting)
+            {
+                if (process.CanResume())
+                {
+                    resumed.Add(process);
+                }
+            }
+
+            MoveWaitingToReady(resumed, log);
+        }
+
+        private void MoveWaitingToReady(List<IProcess> resumed, WriteCallback log)
+        {
+            foreach (IProcess process in resumed)
+            {
+                Waiting.Remove(process);
+                process.ArrivalTime = Clock;
+                Ready.Add(process);
+
+                log($"Moved PID {process.ID.ToString().PadLeft(4, '0')} from WAITING to READY queue.");
+                log("");
+            }
+        }
+
+        private void HandleReadyQueue(WriteCallback log)
+        {
+            IProcess next = GetNext();
+            HandleProcess(log, next);
         }
 
         private IProcess GetNext()
         {
-            return this.Ready.OrderBy(process => process.ArrivalTime).First();
+            return Ready
+                .OrderBy(process => process.ArrivalTime)
+                .ThenBy(Ready.IndexOf)
+                .First();
         }
 
-        private void Handle(WriteCallback log, IProcess process)
-        {
+        private void HandleProcess(WriteCallback log, IProcess process)
+        {           
             if (!process.Progress() && process.Suspended)
             {
-                this.Ready.Remove(process);
-                this.Waiting.Add(process);
-                this.ReportSuspension(log, process);
+                Ready.Remove(process);
+                Waiting.Add(process);
+                ReportSuspension(log, process);
                 return;
             }
             
-            this.Progress();
-            this.ReportSuccess(log, process);
+            ReportSuccess(log, process);
             
             if (process.Completed)
             {
-                this.Ready.Remove(process);
-                this.Completed.Add(process);
+                Ready.Remove(process);
+                Completed.Add(process);
+                ReportCompletion(log, process);
                 return;
             }
         }
 
-        private void Progress()
-        {
-            this.Current++;
-        }
-
-        private void ReportSuspension(WriteCallback log, IProcess next)
+        private static void ReportSuspension(WriteCallback log, IProcess next)
         {
             log($"-----------------");
             log($"PID {next.ID.ToString().PadLeft(4, '0')} is waiting for input.");
             log($"-----------------");
         }
 
-        private void ReportSuccess(WriteCallback log, IProcess next)
+        private static void ReportSuccess(WriteCallback log, IProcess next)
         {
             log($"-----------------");
             log($"1 step has been executed for PID {next.ID.ToString().PadLeft(4, '0')}.");
             log($"");
             log($"This process is {1.0 * next.CurrentStep / next.Steps:p} complete.");
+            log($"-----------------");
+        }
+
+        private static void ReportCompletion(WriteCallback log, IProcess process)
+        {
+            log($"-----------------");
+            log($"PID {process.ID.ToString().PadLeft(4, '0')} has completed.");
+            log($"");
+            log($"Moved PID {process.ID.ToString().PadLeft(4, '0')} from READY to COMPLETED queue.");
             log($"-----------------");
         }
     }

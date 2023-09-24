@@ -12,6 +12,6 @@ namespace Stagger.Model
         bool Completed { get; }
         bool Suspended { get; }
         bool Progress();
-        void Refresh();
+        bool CanResume();
     }
 }

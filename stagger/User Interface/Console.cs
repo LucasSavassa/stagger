@@ -194,7 +194,7 @@ namespace Stagger.UserInterface
             priority = this.PromptForProcessProperty("Priority", 0, 5);
             steps = this.PromptForProcessProperty("Steps", 0, 10);
 
-            _stagger.Add(new Process(arrivalTime, priority, steps));
+            _stagger.Arrive(new Process(arrivalTime, priority, steps));
 
             return true;
         }
@@ -274,9 +274,9 @@ namespace Stagger.UserInterface
             Console.WriteLine($"Total steps");
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(new string('|', _stagger.Current));
+            Console.Write(new string('|', _stagger.Clock));
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write(new string('|', _stagger.Length - _stagger.Current));
+            Console.Write(new string('|', _stagger.Length - _stagger.Clock));
             Console.WriteLine();
             Console.ResetColor();
 

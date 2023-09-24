@@ -4,14 +4,15 @@ namespace Stagger.Model
     public interface IStagger
     {
         string Name { get; }
-        List<IProcess> Ready { get; }
+        List<IProcess> Arriving { get; }
         List<IProcess> Waiting { get; }
+        List<IProcess> Ready { get; }
         List<IProcess> Completed { get; }
         bool Idle { get; }
         bool Busy { get; }
         int Length { get; }
-        int Current { get; }
-        void Add(IProcess process);
+        int Clock { get; }
+        void Arrive(IProcess process);
         void Work(WriteCallback log);
     }
 }
