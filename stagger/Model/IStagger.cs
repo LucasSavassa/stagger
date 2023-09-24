@@ -11,6 +11,7 @@ namespace Stagger.Model
         bool Idle { get; }
         bool Busy { get; }
         int Length { get; }
+        int Progress { get; }
         int Clock { get; }
         void Arrive(IProcess process);
         void Work(WriteCallback log);

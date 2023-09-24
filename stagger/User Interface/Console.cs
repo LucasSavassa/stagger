@@ -12,8 +12,11 @@ namespace Stagger.UserInterface
         public void Start() 
         {
             if (!this.Welcome()) return;
-            if (!this.PromptForStaggerType()) return;
-            if (!this.PromptForMain()) return;
+            while(true)
+            {
+                if (!this.PromptForStaggerType()) break;
+                this.PromptForMain();
+            }
         }
 
         #region Welcome
@@ -274,9 +277,9 @@ namespace Stagger.UserInterface
             Console.WriteLine($"Total steps");
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(new string('|', _stagger.Clock));
+            Console.Write(new string('|', _stagger.Completed.Sum(process => process.Steps)));
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write(new string('|', _stagger.Length - _stagger.Clock));
+            Console.Write(new string('|', _stagger.Length -_stagger.Completed.Sum(process => process.Steps)));
             Console.WriteLine();
             Console.ResetColor();
 
@@ -285,10 +288,26 @@ namespace Stagger.UserInterface
 
         private bool PromptQueue()
         {
+            if (!PromptArrivingQueue()) return false;
             if (!PromptWaitingQueue()) return false;
             if (!PromptReadyQueue()) return false;
             if (!PromptCompletedQueue()) return false;
 
+            return true;
+        }
+
+        private bool PromptArrivingQueue()
+        {
+            if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
+
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine($"Arriving Queue");
+            foreach (IProcess process in _stagger.Arriving)
+            {
+                Console.WriteLine($"  PID {process.ID.ToString().PadLeft(4, '0')}");
+            }
+            Console.WriteLine();
+            Console.ResetColor();
             return true;
         }
 

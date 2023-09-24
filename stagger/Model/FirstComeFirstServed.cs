@@ -18,19 +18,25 @@ namespace Stagger.Model
         public List<IProcess> Ready { get; } = new List<IProcess>();
         public List<IProcess> Completed { get; } = new List<IProcess>();
         public bool Idle => !Busy;
-        public bool Busy =>  Ready.Any() || Waiting.Any();
+        public bool Busy =>  Ready.Any() || Waiting.Any() || Arriving.Any();
         public int Length => 
             Ready.Sum(process => process.Steps)
-          + Waiting.Sum(process => process.Steps)
-          + Completed.Sum(process => process.Steps);
+            + Arriving.Sum(process => process.Steps)
+              + Waiting.Sum(process => process.Steps)
+                + Completed.Sum(process => process.Steps);
+        public int Progress => 
+            Ready.Sum(process => process.CurrentStep)
+            + Arriving.Sum(process => process.CurrentStep)
+              + Waiting.Sum(process => process.CurrentStep)
+               + Completed.Sum(process => process.CurrentStep);
         public int Clock { get; private set; }
 
         public FirstComeFirstServed()
         {
-            
+            Clock = -1;
         }
 
-        public FirstComeFirstServed(IEnumerable<IProcess> initial)
+        public FirstComeFirstServed(IEnumerable<IProcess> initial) : this()
         {
             foreach(IProcess process in initial) Arrive(process);
         }
@@ -75,8 +81,10 @@ namespace Stagger.Model
                 Arriving.Remove(process);
                 Ready.Add(process);
 
+                log($"-----------------");
                 log($"Moved PID {process.ID.ToString().PadLeft(4, '0')} from ARRIVING to READY queue.");
-                log("");
+                log($"-----------------");
+                log($"");
             }
         }
 
@@ -103,13 +111,22 @@ namespace Stagger.Model
                 process.ArrivalTime = Clock;
                 Ready.Add(process);
 
+                log($"-----------------");
                 log($"Moved PID {process.ID.ToString().PadLeft(4, '0')} from WAITING to READY queue.");
-                log("");
+                log($"-----------------");
+                log($"");
             }
         }
 
         private void HandleReadyQueue(WriteCallback log)
         {
+            if (!Ready.Any())
+            {
+                log($"-----------------");
+                log($"No processes are READY.");
+                log($"-----------------");
+                return;
+            }
             IProcess next = GetNext();
             HandleProcess(log, next);
         }
@@ -148,6 +165,7 @@ namespace Stagger.Model
             log($"-----------------");
             log($"PID {next.ID.ToString().PadLeft(4, '0')} is waiting for input.");
             log($"-----------------");
+            log($"");
         }
 
         private static void ReportSuccess(WriteCallback log, IProcess next)
@@ -157,6 +175,7 @@ namespace Stagger.Model
             log($"");
             log($"This process is {1.0 * next.CurrentStep / next.Steps:p} complete.");
             log($"-----------------");
+            log($"");
         }
 
         private static void ReportCompletion(WriteCallback log, IProcess process)
@@ -166,6 +185,7 @@ namespace Stagger.Model
             log($"");
             log($"Moved PID {process.ID.ToString().PadLeft(4, '0')} from READY to COMPLETED queue.");
             log($"-----------------");
+            log($"");
         }
     }
 }
