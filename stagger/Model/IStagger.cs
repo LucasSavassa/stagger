@@ -12,6 +12,7 @@ namespace Stagger.Model
         bool Busy { get; }
         int Length { get; }
         int Progress { get; }
+        IProcess? Current { get; }
         int Clock { get; }
         void Arrive(IProcess process);
         void Work(WriteCallback log);

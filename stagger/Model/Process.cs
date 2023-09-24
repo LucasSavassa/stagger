@@ -3,7 +3,7 @@ namespace Stagger.Model
     public class Process : IProcess
     {
         private static int _currentID = 0;
-        private const double _probability = 0.2;
+        private const double _probability = 0.25;
         public int ID { get; }
         public int ArrivalTime { get; set; }
         public int ServiceTime { get; init; }

@@ -96,11 +96,8 @@ namespace Stagger.UserInterface
                 case "Sj":
                 case "sJ":
                 case "2":
-                    Console.Clear();
-                    Console.WriteLine("You have choosen 2. [SJ] Shortest Job First");
-                    Console.WriteLine("Unfortunately it has not been implemented yet :/");
-                    Console.WriteLine("Good bye!");
-                    return false;
+                    _stagger = new ShortestJobFirst();
+                    return true;
                 case "RR":
                 case "rr":
                 case "Rr":
@@ -193,9 +190,9 @@ namespace Stagger.UserInterface
             Console.WriteLine("-------------------");
 
             int arrivalTime, priority, steps;
-            arrivalTime = this.PromptForProcessProperty("Arrival time", 0, 15);
+            arrivalTime = this.PromptForProcessProperty("Arrival time", 1, 15);
             priority = this.PromptForProcessProperty("Priority", 0, 5);
-            steps = this.PromptForProcessProperty("Steps", 0, 10);
+            steps = this.PromptForProcessProperty("Steps", 1, 10);
 
             _stagger.Arrive(new Process(arrivalTime, priority, steps));
 
@@ -288,11 +285,38 @@ namespace Stagger.UserInterface
 
         private bool PromptQueue()
         {
-            if (!PromptArrivingQueue()) return false;
-            if (!PromptWaitingQueue()) return false;
+            if (!PromptCurrent()) return false;
             if (!PromptReadyQueue()) return false;
+            if (!PromptWaitingQueue()) return false;
+            if (!PromptArrivingQueue()) return false;
             if (!PromptCompletedQueue()) return false;
 
+            return true;
+        }
+
+        private bool PromptCurrent()
+        {
+            if (_stagger is null) return this.PromptError("An internal error occurred, please restart the application.");
+
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine($"Current Process");
+            if (_stagger.Current is null)
+            {
+                Console.WriteLine($"  None");
+                Console.WriteLine();
+                return true;
+            }
+            else
+            {
+                Console.Write($"  PID {_stagger.Current.ID.ToString().PadLeft(4, '0')} : ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write($"{new string('|', _stagger.Current.CurrentStep)}");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.WriteLine($"{new string('|', _stagger.Current.RemainingSteps)}");
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine();
+            }
+            Console.ResetColor();
             return true;
         }
 
@@ -302,10 +326,21 @@ namespace Stagger.UserInterface
 
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine($"Arriving Queue");
-            foreach (IProcess process in _stagger.Arriving)
+
+            if (!_stagger.Arriving.Any())
             {
-                Console.WriteLine($"  PID {process.ID.ToString().PadLeft(4, '0')}");
+                Console.WriteLine($"  None");
+                Console.WriteLine();
+                return true;
             }
+            else
+            {
+                foreach (IProcess process in _stagger.Arriving)
+                {
+                    Console.WriteLine($"  PID {process.ID.ToString().PadLeft(4, '0')}");
+                }
+            }
+
             Console.WriteLine();
             Console.ResetColor();
             return true;
@@ -317,14 +352,24 @@ namespace Stagger.UserInterface
 
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine($"Waiting Queue");
-            foreach (IProcess process in _stagger.Waiting)
+
+            if (!_stagger.Waiting.Any())
             {
-                Console.Write($"  PID {process.ID.ToString().PadLeft(4, '0')} : ");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write($"{new string('|', process.CurrentStep)}");
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.WriteLine($"{new string('|', process.RemainingSteps)}");
-                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"  None");
+                Console.WriteLine();
+                return true;
+            }
+            else
+            {
+                foreach (IProcess process in _stagger.Waiting)
+                {
+                    Console.Write($"  PID {process.ID.ToString().PadLeft(4, '0')} : ");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write($"{new string('|', process.CurrentStep)}");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.WriteLine($"{new string('|', process.RemainingSteps)}");
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                }
             }
             Console.WriteLine();
             Console.ResetColor();
@@ -337,15 +382,26 @@ namespace Stagger.UserInterface
 
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine($"Ready Queue");
-            foreach (IProcess process in _stagger.Ready)
+
+            if (!_stagger.Ready.Any())
             {
-                Console.Write($"  PID {process.ID.ToString().PadLeft(4, '0')} : ");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write($"{new string('|', process.CurrentStep)}");
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.WriteLine($"{new string('|', process.RemainingSteps)}");
-                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"  None");
+                Console.WriteLine();
+                return true;
             }
+            else
+            {
+                foreach (IProcess process in _stagger.Ready)
+                {
+                    Console.Write($"  PID {process.ID.ToString().PadLeft(4, '0')} : ");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write($"{new string('|', process.CurrentStep)}");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.WriteLine($"{new string('|', process.RemainingSteps)}");
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                }
+            }
+
             Console.WriteLine();
             Console.ResetColor();
             return true;
@@ -357,15 +413,26 @@ namespace Stagger.UserInterface
 
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine($"Completed Queue");
-            foreach (IProcess process in _stagger.Completed)
+
+            if (!_stagger.Completed.Any())
             {
-                Console.Write($"  PID {process.ID.ToString().PadLeft(4, '0')} : ");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write($"{new string('|', process.CurrentStep)}");
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.WriteLine($"{new string('|', process.RemainingSteps)}");
-                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"  None");
+                Console.WriteLine();
+                return true;
             }
+            else
+            {
+                foreach (IProcess process in _stagger.Completed)
+                {
+                    Console.Write($"  PID {process.ID.ToString().PadLeft(4, '0')} : ");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write($"{new string('|', process.CurrentStep)}");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.WriteLine($"{new string('|', process.RemainingSteps)}");
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                }
+            }
+
             Console.WriteLine();
             Console.ResetColor();
             return true;

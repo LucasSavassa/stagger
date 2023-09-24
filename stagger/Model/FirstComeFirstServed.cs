@@ -8,17 +8,20 @@ namespace Stagger.Model
         public List<IProcess> Ready { get; } = new List<IProcess>();
         public List<IProcess> Completed { get; } = new List<IProcess>();
         public bool Idle => !Busy;
-        public bool Busy =>  Ready.Any() || Waiting.Any() || Arriving.Any();
-        public int Length => 
-            Ready.Sum(process => process.Steps)
-            + Arriving.Sum(process => process.Steps)
-              + Waiting.Sum(process => process.Steps)
-                + Completed.Sum(process => process.Steps);
-        public int Progress => 
-            Ready.Sum(process => process.CurrentStep)
-            + Arriving.Sum(process => process.CurrentStep)
-              + Waiting.Sum(process => process.CurrentStep)
-               + Completed.Sum(process => process.CurrentStep);
+        public bool Busy =>  Ready.Any() || Waiting.Any() || Arriving.Any() || Current is not null;
+        public int Length =>
+            (Current?.Steps ?? 0)
+            + Ready.Sum(process => process.Steps)
+              + Arriving.Sum(process => process.Steps)
+                + Waiting.Sum(process => process.Steps)
+                  + Completed.Sum(process => process.Steps);
+        public int Progress =>
+            (Current?.CurrentStep ?? 0)
+            + Ready.Sum(process => process.CurrentStep)
+              + Arriving.Sum(process => process.CurrentStep)
+                + Waiting.Sum(process => process.CurrentStep)
+                  + Completed.Sum(process => process.CurrentStep);
+        public IProcess? Current { get; private set; }
         public int Clock { get; private set; }
 
         public FirstComeFirstServed()
@@ -35,7 +38,6 @@ namespace Stagger.Model
         {
             if(process.ArrivalTime < Clock) return;
 
-            process.Arrive(Clock);
             Arriving.Add(process);
         }
 
@@ -69,10 +71,13 @@ namespace Stagger.Model
         {
             foreach (IProcess process in arrived)
             {
+                process.Arrive(Clock);
                 Arriving.Remove(process);
                 Ready.Add(process);
 
                 log($"-----------------");
+                log($"PID {process.ID.ToString().PadLeft(4, '0')} has arrived.");
+                log($"");
                 log($"Moved PID {process.ID.ToString().PadLeft(4, '0')} from ARRIVING to READY queue.");
                 log($"-----------------");
                 log($"");
@@ -103,6 +108,8 @@ namespace Stagger.Model
                 Ready.Add(process);
 
                 log($"-----------------");
+                log($"PID {process.ID.ToString().PadLeft(4, '0')} has received the input it was waiting for.");
+                log($"");
                 log($"Moved PID {process.ID.ToString().PadLeft(4, '0')} from WAITING to READY queue.");
                 log($"-----------------");
                 log($"");
@@ -111,29 +118,45 @@ namespace Stagger.Model
 
         private void HandleReadyQueue(WriteCallback log)
         {
+            if (Current is not null)
+            {
+                HandleProcess(log, Current);
+                return;
+            }
+
             if (!Ready.Any())
             {
                 log($"-----------------");
                 log($"No processes are READY.");
                 log($"-----------------");
+                log($"");
                 return;
             }
-            IProcess next = GetNext();
+            IProcess next = Current = GetNext(log);
             HandleProcess(log, next);
         }
 
-        private IProcess GetNext()
+        private IProcess GetNext(WriteCallback log)
         {
-            return Ready
+            IProcess next = Ready
                 .OrderBy(process => process.ArrivalTime)
                 .ThenBy(Ready.IndexOf)
                 .First();
+            Ready.Remove(next);
+
+            log($"-----------------");
+            log($"PID {next.ID.ToString().PadLeft(4, '0')} now owns the CPU.");
+            log($"-----------------");
+            log($"");
+
+            return next;
         }
 
         private void HandleProcess(WriteCallback log, IProcess process)
         {           
             if (!process.Progress() && process.Suspended)
             {
+                Current = null;
                 Ready.Remove(process);
                 Waiting.Add(process);
                 ReportSuspension(log, process);
@@ -144,6 +167,7 @@ namespace Stagger.Model
             
             if (process.Completed)
             {
+                Current = null;
                 Ready.Remove(process);
                 Completed.Add(process);
                 process.Complete(Clock);
@@ -156,6 +180,8 @@ namespace Stagger.Model
         {
             log($"-----------------");
             log($"PID {next.ID.ToString().PadLeft(4, '0')} is waiting for input.");
+            log($"");
+            log($"PID {next.ID.ToString().PadLeft(4, '0')} no longer owns the CPU and has been moved to WAITING queue.");
             log($"-----------------");
             log($"");
         }
