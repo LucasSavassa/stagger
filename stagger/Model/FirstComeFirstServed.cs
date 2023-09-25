@@ -26,7 +26,7 @@ namespace Stagger.Model
 
         public FirstComeFirstServed()
         {
-            Clock = -1;
+            Clock = 0;
         }
 
         public FirstComeFirstServed(IEnumerable<IProcess> initial) : this()

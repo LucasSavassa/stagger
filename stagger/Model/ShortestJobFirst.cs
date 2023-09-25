@@ -8,7 +8,7 @@ namespace Stagger.Model
         public List<IProcess> Ready { get; } = new List<IProcess>();
         public List<IProcess> Completed { get; } = new List<IProcess>();
         public bool Idle => !Busy;
-        public bool Busy =>  Ready.Any() || Waiting.Any() || Arriving.Any();
+        public bool Busy =>  Ready.Any() || Waiting.Any() || Arriving.Any() || Current is not null;
         public int Length => 
             (Current?.Steps ?? 0)
               + Ready.Sum(process => process.Steps)
@@ -16,7 +16,7 @@ namespace Stagger.Model
                   + Waiting.Sum(process => process.Steps)
                     + Completed.Sum(process => process.Steps);
         public int Progress => 
-            (Current?.Steps ?? 0)
+            (Current?.CurrentStep ?? 0)
               + Ready.Sum(process => process.CurrentStep)
                 + Arriving.Sum(process => process.CurrentStep)
                   + Waiting.Sum(process => process.CurrentStep)

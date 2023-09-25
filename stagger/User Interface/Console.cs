@@ -72,6 +72,7 @@ namespace Stagger.UserInterface
             Console.WriteLine("2. [SJ] Shortest Job First");
             Console.WriteLine("3. [RR] Round Robin");
             Console.WriteLine("4. [SR] Shortest Remaining Time First");
+            Console.WriteLine("5. [Q]uit");
             Console.Write("option: ");
 
             return this.ProcessSecondOption();
@@ -103,19 +104,18 @@ namespace Stagger.UserInterface
                 case "Rr":
                 case "rR":
                 case "3":
-                    Console.Clear();
-                    Console.WriteLine("You have choosen 3. [RR] Round Robin");
-                    Console.WriteLine("Unfortunately it has not been implemented yet :/");
-                    Console.WriteLine("Good bye!");
-                    return false;
+                    _stagger = new RoundRobin();
+                    return true;
                 case "SR":
                 case "sr":
                 case "Sr":
                 case "sR":
                 case "4":
-                    Console.Clear();
-                    Console.WriteLine("You have choosen 4. [SR] Shortest Remaining Time First");
-                    Console.WriteLine("Unfortunately it has not been implemented yet :/");
+                    _stagger = new ShortestRemainingTimeFirst();
+                    return true;
+                case "Q":
+                case "q":
+                case "5":
                     Console.WriteLine("Good bye!");
                     return false;
                 default:
